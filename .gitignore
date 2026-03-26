@@ -8,3 +8,5 @@ apps/web/.env.local
 contracts/lib
 contracts/out
 contracts/cache
+
+.vercel

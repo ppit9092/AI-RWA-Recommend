@@ -184,95 +184,132 @@ export default function HomePage() {
     return eth ?? null;
   };
 
+  const shortText = (value: string) => (value.length > 26 ? `${value.slice(0, 12)}...${value.slice(-8)}` : value);
+
   return (
-    <main>
-      <h1>AI RWA Recommendation Engine V2</h1>
-      <p>Open-model MVP for end-to-end flow testing.</p>
-      <button data-testid="connect-btn" onClick={() => void connectWallet()}>
-        {wallet ? `Connected: ${wallet.slice(0, 6)}...${wallet.slice(-4)}` : "Connect Wallet"}
-      </button>
+    <main className="page-shell">
+      <div className="hero-gradient" />
+      <header className="topbar">
+        <div>
+          <h1>AI RWA Recommendation Engine</h1>
+          <p className="sub">Premium AI advisor for fractional real-world assets</p>
+        </div>
+        <button className="btn ghost" data-testid="connect-btn" onClick={() => void connectWallet()}>
+          {wallet ? `Wallet ${wallet.slice(0, 6)}...${wallet.slice(-4)}` : "Connect Wallet"}
+        </button>
+      </header>
 
-      <section className="card">
-        <h2>Preferences</h2>
-        <label>
-          Risk
-          <select
-            data-testid="risk-select"
-            value={risk}
-            onChange={(e) => setRisk(e.target.value as Risk)}
-          >
-            <option value="low">low</option>
-            <option value="medium">medium</option>
-            <option value="high">high</option>
-          </select>
-        </label>
+      <section className="card elevated">
+        <div className="card-title-row">
+          <h2>Investor Preferences</h2>
+          <span className="pill">Chain: Polygon Amoy</span>
+        </div>
 
-        <label>
-          Duration (months)
-          <input
-            data-testid="duration-input"
-            type="number"
-            value={durationMonths}
-            onChange={(e) => setDurationMonths(Number(e.target.value))}
-          />
-        </label>
+        <div className="form-grid">
+          <label className="field">
+            <span>Risk Profile</span>
+            <select
+              data-testid="risk-select"
+              value={risk}
+              onChange={(e) => setRisk(e.target.value as Risk)}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
 
-        <label>
-          Target Yield (%)
-          <input
-            data-testid="yield-input"
-            type="number"
-            value={targetYield}
-            onChange={(e) => setTargetYield(Number(e.target.value))}
-          />
-        </label>
+          <label className="field">
+            <span>Duration (months)</span>
+            <input
+              data-testid="duration-input"
+              type="number"
+              value={durationMonths}
+              onChange={(e) => setDurationMonths(Number(e.target.value))}
+            />
+          </label>
 
-        <label>
-          <input
-            type="checkbox"
-            checked={assetTypes.includes("real_estate")}
-            onChange={() => toggleAsset("real_estate")}
-          />
-          real_estate
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={assetTypes.includes("art")}
-            onChange={() => toggleAsset("art")}
-          />
-          art
-        </label>
+          <label className="field">
+            <span>Target Yield (%)</span>
+            <input
+              data-testid="yield-input"
+              type="number"
+              value={targetYield}
+              onChange={(e) => setTargetYield(Number(e.target.value))}
+            />
+          </label>
+        </div>
 
-        <button data-testid="recommend-btn" onClick={submitPreferences} disabled={loading}>
-          {loading ? "Generating..." : "Get Recommendation"}
+        <div className="asset-row">
+          <label className="checkbox-chip">
+            <input
+              type="checkbox"
+              checked={assetTypes.includes("real_estate")}
+              onChange={() => toggleAsset("real_estate")}
+            />
+            <span>Real Estate</span>
+          </label>
+          <label className="checkbox-chip">
+            <input
+              type="checkbox"
+              checked={assetTypes.includes("art")}
+              onChange={() => toggleAsset("art")}
+            />
+            <span>Art</span>
+          </label>
+        </div>
+
+        <button className="btn primary" data-testid="recommend-btn" onClick={submitPreferences} disabled={loading}>
+          {loading ? "Generating AI Recommendation..." : "Generate Recommendation"}
         </button>
       </section>
 
       {result && (
-        <section className="card">
-          <h2>Recommendation Result</h2>
-          <p data-testid="model-name">Model: {result.model}</p>
-          {result.recommendations.map((item, i) => (
-            <div key={`${item.tokenId}-${i}`} style={{ marginBottom: 12 }}>
-              <strong data-testid={`token-${i}`}>Token #{item.tokenId}</strong>
-              <div>Score: {item.score.toFixed(2)}</div>
-              <div>
-                Predicted Yield: {item.predictedYieldMin}% - {item.predictedYieldMax}%
-              </div>
-              <div>Amount: {item.fractionAmount}</div>
-              <div>{item.reason}</div>
+        <section className="card elevated">
+          <div className="card-title-row">
+            <h2>Recommendation Result</h2>
+            <span className="pill" data-testid="model-name">
+              {result.model}
+            </span>
+          </div>
+
+          <div className="recommend-grid">
+            {result.recommendations.map((item, i) => (
+              <article key={`${item.tokenId}-${i}`} className="rec-card">
+                <div className="rec-top">
+                  <strong data-testid={`token-${i}`}>Token #{item.tokenId}</strong>
+                  <span className="score">Score {item.score.toFixed(2)}</span>
+                </div>
+                <p className="metric">
+                  Yield Range: {item.predictedYieldMin}% - {item.predictedYieldMax}%
+                </p>
+                <p className="metric">Recommended Amount: {item.fractionAmount}</p>
+                <p className="reason">{item.reason}</p>
+              </article>
+            ))}
+          </div>
+
+          <p className="disclaimer">{result.riskDisclosure}</p>
+
+          <div className="action-row">
+            <button className="btn primary" data-testid="onchain-btn" onClick={submitOnChain}>
+              Submit Summary On-Chain
+            </button>
+            <button className="btn success" data-testid="buy-btn" onClick={simulateBuy}>
+              Execute Mint / Buy
+            </button>
+          </div>
+
+          <div className="status-grid">
+            <div className="status-item">
+              <span>On-chain status</span>
+              <p data-testid="chain-status">{shortText(chainStatus)}</p>
             </div>
-          ))}
-          <p>{result.riskDisclosure}</p>
-          <button data-testid="onchain-btn" onClick={submitOnChain}>
-            Submit Recommendation Summary On-Chain
-          </button>
-          <p data-testid="chain-status">{chainStatus}</p>
-          <button className="secondary" data-testid="buy-btn" onClick={simulateBuy}>
-            Simulate Buy (Mint)
-          </button>
-          <p data-testid="buy-status">{buyStatus}</p>
+            <div className="status-item">
+              <span>Mint status</span>
+              <p data-testid="buy-status">{shortText(buyStatus)}</p>
+            </div>
+          </div>
         </section>
       )}
     </main>
